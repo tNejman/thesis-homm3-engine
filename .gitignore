@@ -1,3 +1,4 @@
+*.app
 *.aux
 *.bbl
 *.bcf
@@ -21,3 +22,5 @@
 *~
 *.swp
 .DS_Store
+
+rewew.md
