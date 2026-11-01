@@ -1,0 +1,291 @@
+%-----------------------------------------------
+%  Engineer's & Master's Thesis Template
+%  Copyleft by Artur M. Brodzki & Piotr Woźniak
+%  Warsaw University of Technology, 2019-2022
+%-----------------------------------------------
+
+\documentclass[
+    bindingoffset=5mm,
+    footnoteindent=3mm,
+    hyphenation=true
+]{src/wut-thesis}
+
+\facultyeiti
+\EngineerThesis
+\langpol
+
+\begin{document}
+
+\instytut{XXXXXX} % Bez słowa "Instytut", np. \instytut{Informatyki}
+\kierunek{XXXXXX}
+\specjalnosc{XXXXXX} % Usuń, jeśli kierunek nie ma specjalności
+\title{
+    Tytuł pracy po polsku \\
+    drugi wiersz tytułu
+}
+\engtitle{
+    Thesis title in English \\
+    second line of the title
+}
+\author{Tomasz Nejman}
+\album{XXXXXX}
+\promotor{tytuł/stopień naukowy, Imię i Nazwisko}
+%\konsultant{tytuł/stopień naukowy, Imię i Nazwisko} % Opcjonalnie
+%\numerpracy{XXXXXX} % Opcjonalnie: numer wg wydziałowej ewidencji prac
+\date{\the\year} % Rok obrony, jeśli inny niż bieżący
+\maketitle
+
+\clearpage
+\pagestyle{plain}
+\begin{singlespace}
+\abstract Treść streszczenia po polsku (maksymalnie jedna strona).
+\keywords XXX, XXX, XXX
+\end{singlespace}
+
+\clearpage
+\begin{singlespace}
+\secondabstract Abstract text in English (one page at most).
+\secondkeywords XXX, XXX, XXX
+\end{singlespace}
+
+\clearpage
+\makeauthorship
+
+\clearpage
+\makelicense
+
+\clearpage
+\tableofcontents
+
+\clearpage
+\pagestyle{headings}
+
+\section{Wstęp}
+
+\clearpage
+\section{Wprowadzenie do architektury silników gier}
+
+\subsection{Granica między silnikiem a grą}
+
+Zrozumienie współczesnej architektury silników gier wymaga w pierwszej kolejności
+zdefiniowania granicy między samym silnikiem a logiką gry. Jak zauważa Jason
+Gregory w monografii \emph{Game Engine Architecture} REF GEA, w praktyce rozróżnienie, gdzie
+kończy się silnik, a zaczyna gra bywa trudne, a granica pozostaje rozmyta. Do tego
+silniki gier rzadko powstają w próżni. Przykładowo silnik \emph{Unreal Engine 1} (rok 1998)
+tworzony był specyficznie dla flagowej gry Epic Games \emph{Unreal}. REF NEEDED
+
+\subsection{Od układów cyfrowych do monolitycznego kodu}
+
+Historycznie, projektanci pierwszych gier nie rozróżniali pojęć “gra” i “silnik” w ogóle,
+gdyż nie było możliwości myślenia na takim poziomie abstrakcji. Początkowo gry nie
+były w ogóle “pisane” we współczesnym znaczeniu, z wykorzystywaniem języka
+programowania. Analiza opisu patentowego \emph{Video Image Positioning Control System
+for Amusement Device} REF PONG wykazuje, iż maszyny odpowiedzialne za uruchomienie
+gry \emph{PONG} (rok 1972) nie posiadały procesora, pamięci operacyjnej, a tym bardziej
+kodu w dzisiejszym rozumieniu. Cała “logika” gry, tj. fizyka piłki, wyświetlanie punktów,
+była permanentnie utrwalona na płytce TTL i jej układach cyfrowych. Mechanika gry
+była de facto tożsama ze sprzętem komputerowym.
+
+Sytuacja uległa zmianie wraz z upowszechnieniem się mikroprocesorów. Poziom
+abstrakcji wzrósł ponad okablowanie do kodu maszynowego, jednak zasoby sprzętowe
+były drastycznie ograniczone, co uwidacznia poniższa tabela:
+
+\begin{table}[!h] \centering
+    \caption{Ilość pamięci RAM wybranych urządzeń.}
+    \begin{tabular}{| l | c | c |} \hline
+        Urządzenie                  & Ilość pamięci RAM & Rok wydania \\ \hline\hline
+        Oryginalny automat z PAC-MANem & 2 KB           & 1980        \\ \hline
+        Commodore 64                & 64 KB             & 1982        \\ \hline
+        Atari 600XL                 & 64 KB             & 1983        \\ \hline
+    \end{tabular}
+\end{table}
+
+W konsekwencji tych ograniczeń programy, a w szczególności gry, stanowiły
+architektoniczny monolit. Przykładowo w grze \emph{PAC-MAN} REF PACMAN logika gry, AI
+“duszków”, rysowanie grafiki i obsługa joysticka są ze sobą całkowicie wymieszane, ze
+względu na wymóg intensywnej optymalizacji. Każda gra była tak naprawdę swoim
+własnym, unikalnym silnikiem, którego nie dało się podzielić na komponenty, czy w
+skuteczny sposób użyć ponownie.
+
+\subsection{Wzrost mocy obliczeniowej i separacja silnika od gry}
+
+Już w 1965 roku Gordon Moore REF MOORE zaobserwował wykładniczy wzrost liczby
+tranzystorów w układach scalonych i przewidział, że utrzyma się on jeszcze przez
+wiele lat. Ów wzrost spowodował monumentalne i stabilne zwiększanie się mocy
+obliczeniowej komputerów/konsol i rozmiarów pamięci. Pozwoliło to na pojawienie się
+gier, wpierw pseudo-3D REF P3D, np. \emph{Wolfenstein 3D} (rok 1992) czy \emph{DOOM} (rok 1993), a
+później true-3D REF T3D, np. \emph{Quake} (rok 1996 - PC), \emph{Super Mario 64} (rok 1996 - Nintendo
+64). Oprócz tego zwiększyły się możliwości nie tylko graficzne, ale także logiczne.
+Gwałtowny wzrost liczby symulowanych obiektów oraz wprowadzenie przestrzeni
+trójwymiarowej wywołały kryzys związany z zarządzaniem globalnym stanem gry. W
+grach dwuwymiarowych ten stan mógł być kontrolowany przez relatywnie prostą
+strukturę danych. W środowisku 3D, gdzie jednocześnie musiały współistnieć systemy
+detekcji kolizji, kalkulacji fizyki oraz zaawansowanej sztucznej inteligencji, utrzymanie
+spójności danych stało się wyzwaniem. Tradycyjne, monolityczne podejście, w którym
+cały program miał bezpośredni dostęp do zmiennych globalnych, prowadziło do błędów
+synchronizacji, trudnych do wykrycia efektów ubocznych oraz uniemożliwiało
+skuteczne skalowanie kodu. To drastyczne skomplikowanie systemów zarządzania
+stanem wymusiło ostateczną separację logiki od kodu bazowego. Ponownie
+programiści musieli wejść na jeszcze wyższy poziom abstrakcji. Oprócz tego, jak
+wspominają Bishop et al.REF BISHOP (1998) tworzenie tak skomplikowanych gier od zera
+nie byłoby ani ekonomicznie opłacalne, ani konieczne. Definiują oni silnik gry jako zbiór
+elementów gry, nie mających wpływu na samą zawartość gry, tj:
+\begin{itemize}
+    \item pobieranie informacji z urządzeń wejścia,
+    \item symulowanie dynamiki obiektów,
+    \item renderowanie obrazu,
+    \item odtwarzanie dźwięku.
+\end{itemize}
+
+\subsection{Silniki gier strategicznych a uniwersalność kodu}
+
+O ile powyższa taksonomia odpowiada klasycznym silnikom, szczególnie gier typu
+FPS, TPS, MMO, MOBA, w przypadku gier strategicznych sytuacja wygląda nieco
+inaczej. W przypadku gier RTS lub turowych priorytety przesuwają się z symulacji
+ciągłej fizyki i predykcji stanów, w stronę deterministycznego zarządzania stanem wielu
+obiektów, np. obsługi unikalnych wymagań strategii, takich jak zarządzanie armiami,
+czy specyficzne algorytmy wyszukiwania ścieżek. Ponadto, wiele gier strategicznych
+bazuje na planszach o dyskretnym podziale na pola, np. serie \emph{Civilization}
+(sześciokątne pola), \emph{Heroes of Might and Magic} (kwadratowe i sześciokątne pola). Ten
+gatunkowy rozstrzał bezpośrednio ilustruje problematykę uniwersalności kodu.
+Problem ten definiuje Jason Gregory w monografii \emph{Game Engine Architecture} REF GEA,
+gdzie określa silnik gry jako oprogramowanie, które jest “możliwe do rozbudowania i
+może być użyte jako podstawa dla wielu gier bez większych modyfikacji”.
+Jednocześnie Gregory zaznacza, że w wielu przypadkach granica między silnikiem a
+grą jest rozmyta. Podkreśla on, że przesunięcie tej granicy w jedną czy drugą stronę
+ma bardzo jasne konsekwencje: silnik ogólnego przeznaczenia będzie bardziej
+uniwersalny, ale mniej przystosowany do konkretnego typu gry, zaś silnik bardziej
+nakierowany na dany podgatunek będzie znacznie trudniejszy lub wręcz niemożliwy do
+użycia w przypadku ogólnym. Ta dwojaka natura silników powoduje, że projektowanie
+architektury silnika to nieustanne zarządzanie kompromisem, z jednej strony
+elastyczność z drugiej optymalizacja pod konkretny typ rozgrywki.
+
+\clearpage
+\section{Cel pracy}
+
+\clearpage
+\section{Istniejące rozwiązania}
+
+\subsection{Złożoność gier turowych}
+
+Przede wszystkim warto wspomnieć, że w grach turowych nie sposób jest zbadać
+wszystkie możliwe ścieżki gry. Na przykładzie klasycznej gry w szachy Claude E.
+Shannon w pracy \emph{Programming a Computer for Playing Chess} REF SHANNON wylicza liczbę
+możliwych rozgrywek na rząd wielkości $10^{120}$, z założeniem średnio 40 ruchów per
+rozgrywka. Następnie z założeniem maszyny, która symuluje jedną rozgrywkę w czasie
+jednej mikrosekundy oblicza średni czas na wybranie pierwszego optymalnego ruchu
+na $10^{90}$ lat. Jest to liczba absolutnie przekraczająca możliwości obliczeniowe
+współczesnych systemów.
+
+Nowoczesne strategiczne gry turowe przewyższają szachy w możliwej liczbie decyzji,
+ruchów i tur praktycznie zawsze. W złożonych grach typu 4X (eXplore, eXpand,
+eXploit, eXterminate), takich jak \emph{Civilization VI}, standardowa rozgrywka wymaga
+rozegrania setek tur (średnio ok 350 REF CIV), a podczas każdej z nich gracz podejmuje
+wiele decyzji (średnio 10-20), każda z nich mająca wiele różnych wyników. Wskutek
+tego obliczenie optymalnego ruchu można uznać za niemożliwe w sensownym czasie.
+
+\subsection{Paradygmat Forward Model}
+
+Algorytmy sztucznej inteligencji bazują na rozgrywaniu tysięcy, jeśli nie milionów gier,
+symulując podejmowanie decyzji i ewaluując nowy stan. W związku z tym, dostarczany
+silnik musi spełniać paradygmat \emph{Forward Model}, tj. musi dostarczać deterministyczną
+funkcję stan-przejście. Mając dany Stan (\emph{S}) i Akcję (\emph{A}) funkcja oblicza nowy stan
+(\emph{S+1}). Ze względu na gigantyczną liczbę symulacji funkcja ta musi być możliwie
+zoptymalizowana pod względem złożoności obliczeniowej i pamięciowej. Oprócz tego
+wiele algorytmów drzewiastych (Minimax, MCTS) wymagają częstego duplikowania
+obecnego stanu gry na poddrzewa. Jednakże kopiowanie stanu gry często bywa
+bardzo kosztowne; przykładowo gra \emph{StarCraft II} przez wiele lat nie dostarczała API
+typu \emph{Forward Model} właśnie ze względu na złożoność obliczeniową i pamięciową REF
+STARCRAFT. Warto dodać, że optymalny \emph{Forward Model} powinien projektować stan jako
+dane ciągłe w pamięci, co pozwala na klonowanie stanu za pomocą prostych operacji
+kopiowania bloków (cache hit) zamiast kosztownych operacji po obiektach.
+
+\subsection{Zakres przeglądu}
+
+Mając na celu dostarczenie szybkie i wygodne FM API dla agentów AI oraz w związku
+z naciskiem na gatunek TBS (Turn Based Strategy) gry \emph{Heroes of Might and Magic},
+podczas rozpatrywania istniejących rozwiązań rynkowych, prac badawczych i
+dedykowanych silników będę skupiał się nie na skomplikowanych potokach
+renderowania, synchronizacji sieciowej czy algorytmach zbierania danych od
+użytkownika, ale głównie na tym, w jaki sposób silniki te w deterministyczny sposób
+zarządzają stanem gry. Co więcej, ze względu na charakter badawczy projektu mojego
+silnika będę również skupiał się nie tylko na możliwości prowadzenia faktycznej
+rozgrywki gracz-gracz, ale także na łatwości wykorzystania silnika przez agentów, na
+cele treningu.
+
+\subsection{Tribes}
+
+Zagadnienie dostarczenia gry z API typu FM zostało zbadane i opisane przez Diego
+Perez-Liebana et al. (2020) w pracy \emph{Tribes: A New Turn-Based Strategy Games for AI
+Research} REF TRIBES. Jest to prosta gra turowa typu 4X, bazująca na grach typu
+\emph{Civilization}, \emph{The Battle of Polytopia}. Gra ta odbywa się na planszy 2D o rozmiarze N x
+N. W każdej turze gracze mogą poruszać się po planszy, atakować, rozwijać drzewo
+umiejętności, etc. Powodem stworzenia tej gry był właśnie narzut związany z
+kopiowaniem stanu w klasycznych grach 4X (i klasycznych silnikach) na rzecz
+trenowania agentów AI, a celem było stworzenie lekkiego mechanizmu replikowania
+dla algorytmów typu SFP (ang. \emph{Statistical Forward Planning}). Oprócz tego gra dotyka
+aspektu częściowej możliwości obserwowania stanu gry, tj. z perspektywy danego
+gracza część planszy jest ukryta za tzw. “mgłą wojny”. Środowisko gry \emph{Tribes} z
+powodzeniem realizuje interfejs \emph{Forward Model} udostępniając metody do kopiowania
+stanu gry, wykonywania ruchów. Aby zapewnić czystszy interfejs, \emph{Tribes} wykorzystuje
+wzorzec \emph{Command Pattern}, aby dokonać enkapsulacji i modularyzacji możliwych i
+wykonywanych ruchów. Choć nie zaimplementowano tego w \emph{Tribes}, \emph{Command Pattern}
+umożliwia również kolejkowanie ruchów lub implementację metody “undo”, jeżeli ruchy
+są deterministyczne.
+
+Perez-Liebana et al. (2020) skupia się głównie w \emph{Tribes} na kombinatorycznym
+przyroście związanym z decyzjami globalnymi, tj. co wybudować, co zbadać, i
+dalekosiężnym planowaniem (SFP) w warunkach niepełnej informacji.
+
+\subsection{MicroRTS}
+
+Problemu wykładniczego przyrostu poddrzew w algorytmach drzewiastych dotyka
+również Santiago Ontañón w pracy \emph{The Combinatorial Multi-Armed Bandit Problem
+and Its Application to Real-Time Strategy Games}REF MULTI ARMED BANDIT. Praca ta
+rozpatruje, jak sama nazwa wskazuje, problem \emph{Combinatorial Multi-Armed Bandit}. W
+sytuacji gdy istnieje \emph{N} jednostek i każda z nich ma \emph{M} możliwych ruchów, to przestrzeń
+akcji w jednym kroku wynosi $M^N$. Ontañón skupia się na próbie oszacowania
+optymalnego ruchu poprzez rozważanie sposobów przeszukiwania przestrzeni i
+balansu eksploracja-eksploracja na podstawie autorskiego silnika gry \emph{MicroRTS}.
+
+Podobnie jak \emph{Tribes}, \emph{MicroRTS} dostarcza interfejs \emph{Forward Model}, czyli zapewnia
+możliwość kopiowania stanu gry globalnym \emph{copy} i implementuje \emph{Command Pattern}. W
+przeciwieństwie do \emph{Tribes}, \emph{MicroRTS}, jak sama nazwa wskazuje jest grą typu RTS
+(Real Time Strategy), czyli czas w grze jest pseudo-ciągły (tick , a gracze podejmują
+decyzje w dowolnym momencie, asynchronicznie.
+
+O ile \emph{Tribes} optymalizuje “lekkość” samego stanu, by operacja \emph{copy} była jak najmniej
+kosztowna pamięciowo i wykorzystuje płaskie struktury danych oraz prymitywy, o tyle
+\emph{MicroRTS} często radzi sobie z problemem poprzez abstrakcję akcji, tj. skryptowanie
+zachowań jednostek, aby odciążyć \emph{Forward Model}. W \emph{MicroRTS} nie planuje się kroków
+co tick (znacznie wyższa granularność czasowa RTS), zamiast tego algorytm planuje
+akcje długoterminowe.
+
+\subsection{Ograniczenia środowisk opartych na Javie}
+
+Środowiska badawcze, takie jak opisywane wcześniej \emph{Tribes} czy \emph{MicroRTS}, z
+powodzeniem realizują interfejs \emph{Forward Model}, ich implementacja opiera się na
+wysokopoziomowym, obiektowym języku programowania jakim jest Java. W Javie
+wszystkie obiekty klas tworzone są na stercie, a zarządzanie pamięci operate jest o
+garbage collector. W konsekwencji obydwa mechanizmy kopiowania stanu gry są
+wysoce nieoptymalne, gdyż każde głębokie kopiowanie stanu gry skutkuje kaskadą
+braków trafienia w pamięci podręcznej (cache miss) REF NEEDED.
+
+\subsection{VCMI}
+
+Oryginalna gra \emph{HoMM III} była napisana głównie w języku C++ REF ICCULUS, ale kod do tej
+pory jest prywatną własnością (obecnie) firmy Ubisoft. \emph{VCMI} to projekt open-source,
+mający na celu zbudowanie gry \emph{Heroes of Might and Magic III} od zera w języku C++ REF
+VCMI. Silnik \emph{VCMI} jest budowany z myślą o replikacji gry 1 do 1, z podejściem OOP.
+\emph{VCMI} nie jest jednolitym programem, dziel się na proces serwera, który autoryzuje stan
+gry, oraz klientów odpowiedzialnych za renderowanie i obsługę gracza. Taka separacja
+jest dobrym rozwiązaniem do rozgrywek sieciowych, ale dla agenta AI oznaczałby duży
+narzut czasowy związany z tym, że komunikacja między botem a serwerem często
+musi przechodzić przez warstwę sieciową. Część serwerowa \emph{VCMI} jest ściśle
+ustrukturyzowana i zorientowana na dostęp do obiektów przez czyste interfejsy, jednak
+to wprowadza problem nieciągłości danych w pamięci. Twórcy \emph{VCMI} nie skupiali się na
+tym, gdyż głównym celem było utworzenie działającej i utrzymywalnej wersji gry
+\emph{Heroes III}, a nie środowiska dla agentów AI. W konsekwencji tego \emph{VCMI} nie
+wprowadza interfejsu \emph{Forward Model}.
+
+\end{document}
