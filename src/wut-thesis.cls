@@ -57,7 +57,9 @@
 \RequirePackage{array}         % Advanced table column formats
 \RequirePackage{enumitem}      % Itemize/enumrate
 \RequirePackage{fancyhdr}      % Custom header/footer styles
-\RequirePackage{fourier}       % Adobe Utopia font
+\RequirePackage[T1]{fontenc}   % Real accented glyphs
+\RequirePackage[lining]{ebgaramond} % EB Garamond font
+\RequirePackage{mathastext}    % Math letters and digits in text font
 \RequirePackage{graphicx}      % Enhanced images support
 \RequirePackage{ifluatex}      % LuaTeX-specific options
 \RequirePackage{kantlipsum}    % English kantian-style lipsum

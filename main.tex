@@ -16,36 +16,64 @@
 
 \begin{document}
 
-\instytut{XXXXXX} % Bez słowa "Instytut", np. \instytut{Informatyki}
-\kierunek{XXXXXX}
-\specjalnosc{XXXXXX} % Usuń, jeśli kierunek nie ma specjalności
+\instytut{Informatyki}
+\kierunek{Informatyka}
+\specjalnosc{Inżynieria Wytwarzania Oprogramowania}
 \title{
-    Tytuł pracy po polsku \\
-    drugi wiersz tytułu
+    Projekt i implementacja komponentowego silnika \\
+    gry strategicznej z turowym systemem rozgrywki
 }
 \engtitle{
-    Thesis title in English \\
-    second line of the title
+    Design and implementation of a component-based \\
+    strategy game engine with turn-based gameplay
 }
 \author{Tomasz Nejman}
-\album{XXXXXX}
-\promotor{tytuł/stopień naukowy, Imię i Nazwisko}
-%\konsultant{tytuł/stopień naukowy, Imię i Nazwisko} % Opcjonalnie
-%\numerpracy{XXXXXX} % Opcjonalnie: numer wg wydziałowej ewidencji prac
-\date{\the\year} % Rok obrony, jeśli inny niż bieżący
+\album{331411}
+\promotor{mgr inż. Witold Wysota}
+\date{2027}
 \maketitle
 
 \clearpage
 \pagestyle{plain}
 \begin{singlespace}
-\abstract Treść streszczenia po polsku (maksymalnie jedna strona).
-\keywords XXX, XXX, XXX
+    \abstract Algorytmy planowania stosowane w grach turowych, takie jak Minimax i MCTS,
+    wymagają wykonania ogromnej liczby symulacji rozgrywki. Silnik gry musi zatem udostępniać
+    interfejs \emph{Forward Model}, czyli funkcję obliczającą nowy stan gry na podstawie
+    stanu bieżącego i wybranej akcji, a także umożliwiać tanie kopiowanie stanu. Klasyczne
+    silniki gier nie są projektowane z myślą o takim zastosowaniu.
+
+    Celem pracy jest zaprojektowanie i implementacja komponentowego silnika gry strategicznej
+    z turowym systemem rozgrywki, wzorowanej na serii \emph{Heroes of Might and Magic}, który
+    pozwoli zarówno na prowadzenie rozgrywki, jak i na wykorzystanie go przez agentów
+    sztucznej inteligencji.
+
+    W pracy omówiono rozwój architektury silników gier oraz kompromis między uniwersalnością
+    silnika a jego dopasowaniem do konkretnego gatunku. Przedstawiono złożoność gier turowych
+    i paradygmat \emph{Forward Model}. Dokonano przeglądu istniejących rozwiązań: środowisk
+    badawczych \emph{Tribes} i \emph{MicroRTS} oraz projektu \emph{VCMI}, ze szczególnym
+    uwzględnieniem sposobu zarządzania stanem gry i kosztu jego kopiowania.
+    \keywords silnik gry, gra strategiczna, gra turowa, Forward Model, architektura komponentowa, sztuczna inteligencja
 \end{singlespace}
 
 \clearpage
 \begin{singlespace}
-\secondabstract Abstract text in English (one page at most).
-\secondkeywords XXX, XXX, XXX
+    \secondabstract Planning algorithms used in turn-based games, such as Minimax and MCTS,
+    require a vast number of game simulations. A game engine must therefore provide
+    a \emph{Forward Model} interface, that is, a function computing the next game state from
+    the current state and a chosen action, and must also make copying the state cheap.
+    Conventional game engines are not designed with this use in mind.
+
+    The aim of this thesis is to design and implement a component-based engine for a
+    turn-based strategy game modelled on the \emph{Heroes of Might and Magic} series, which
+    supports both regular play and use by artificial intelligence agents.
+
+    The thesis discusses the evolution of game engine architecture and the trade-off between
+    the universality of an engine and its fit to a particular genre. It presents the
+    complexity of turn-based games and the \emph{Forward Model} paradigm. Existing solutions
+    are reviewed, namely the \emph{Tribes} and \emph{MicroRTS} research environments and the
+    \emph{VCMI} project, with particular attention to how they manage game state and what
+    copying it costs.
+    \secondkeywords game engine, strategy game, turn-based game, Forward Model, component-based architecture, artificial intelligence
 \end{singlespace}
 
 \clearpage
@@ -80,7 +108,7 @@ Historycznie, projektanci pierwszych gier nie rozróżniali pojęć “gra” i 
 gdyż nie było możliwości myślenia na takim poziomie abstrakcji. Początkowo gry nie
 były w ogóle “pisane” we współczesnym znaczeniu, z wykorzystywaniem języka
 programowania. Analiza opisu patentowego \emph{Video Image Positioning Control System
-for Amusement Device} REF PONG wykazuje, iż maszyny odpowiedzialne za uruchomienie
+    for Amusement Device} REF PONG wykazuje, iż maszyny odpowiedzialne za uruchomienie
 gry \emph{PONG} (rok 1972) nie posiadały procesora, pamięci operacyjnej, a tym bardziej
 kodu w dzisiejszym rozumieniu. Cała “logika” gry, tj. fizyka piłki, wyświetlanie punktów,
 była permanentnie utrwalona na płytce TTL i jej układach cyfrowych. Mechanika gry
@@ -93,10 +121,10 @@ były drastycznie ograniczone, co uwidacznia poniższa tabela:
 \begin{table}[!h] \centering
     \caption{Ilość pamięci RAM wybranych urządzeń.}
     \begin{tabular}{| l | c | c |} \hline
-        Urządzenie                  & Ilość pamięci RAM & Rok wydania \\ \hline\hline
-        Oryginalny automat z PAC-MANem & 2 KB           & 1980        \\ \hline
-        Commodore 64                & 64 KB             & 1982        \\ \hline
-        Atari 600XL                 & 64 KB             & 1983        \\ \hline
+        Urządzenie                     & Ilość pamięci RAM & Rok wydania \\ \hline\hline
+        Oryginalny automat z PAC-MANem & 2 KB              & 1980        \\ \hline
+        Commodore 64                   & 64 KB             & 1982        \\ \hline
+        Atari 600XL                    & 64 KB             & 1983        \\ \hline
     \end{tabular}
 \end{table}
 
@@ -217,7 +245,7 @@ cele treningu.
 
 Zagadnienie dostarczenia gry z API typu FM zostało zbadane i opisane przez Diego
 Perez-Liebana et al. (2020) w pracy \emph{Tribes: A New Turn-Based Strategy Games for AI
-Research} REF TRIBES. Jest to prosta gra turowa typu 4X, bazująca na grach typu
+    Research} REF TRIBES. Jest to prosta gra turowa typu 4X, bazująca na grach typu
 \emph{Civilization}, \emph{The Battle of Polytopia}. Gra ta odbywa się na planszy 2D o rozmiarze N x
 N. W każdej turze gracze mogą poruszać się po planszy, atakować, rozwijać drzewo
 umiejętności, etc. Powodem stworzenia tej gry był właśnie narzut związany z
@@ -241,7 +269,7 @@ dalekosiężnym planowaniem (SFP) w warunkach niepełnej informacji.
 
 Problemu wykładniczego przyrostu poddrzew w algorytmach drzewiastych dotyka
 również Santiago Ontañón w pracy \emph{The Combinatorial Multi-Armed Bandit Problem
-and Its Application to Real-Time Strategy Games}REF MULTI ARMED BANDIT. Praca ta
+    and Its Application to Real-Time Strategy Games}REF MULTI ARMED BANDIT. Praca ta
 rozpatruje, jak sama nazwa wskazuje, problem \emph{Combinatorial Multi-Armed Bandit}. W
 sytuacji gdy istnieje \emph{N} jednostek i każda z nich ma \emph{M} możliwych ruchów, to przestrzeń
 akcji w jednym kroku wynosi $M^N$. Ontañón skupia się na próbie oszacowania
